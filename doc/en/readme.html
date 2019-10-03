@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<link rel="stylesheet" type="text/css" href="../style.css" media="screen"/>
+<title>Character / word readout toggler 1.03</title>
+</head>
+<body>
+<h1>cwToggler : character / word readout toggler</h1>
+<h2>Overview</h2>
+<p>git URL: https://github.com/yncat/cwToggler<br />
+My website: https://www.nyanchangames.com/<br />
+This add-on retrieves your "speak typed words" and "speak typed characters" settings and masks it when you're outside of any kind of editable text controls. You'll hear character / word echo only when you're actually editing texts. I'm sure gamers who like pressing space bar like the faimous keyboard crasher or non-gamers who use character-related shortcuts a lot really appreciate this(myself included of course).  </p>
+<h2>Usage</h2>
+<p>prebuilt package: https://www.nyanchangames.com/softs/count/download.php?download=9<br />
+Or do <code>scons</code> to build for yourself<br />
+Install and feel the usefulness.  </p>
+<h2>TODO</h2>
+<ul>
+<li>Code optimization  </li>
+</ul>
+<h2>Localizing</h2>
+<p>Use the included cwToggler.pot. Make sure you save the file in UTF-8 without BOM.  </p>
+<h1>Translating</h1>
+<p>Run <code>scons pot</code><br />
+Edit the generated pot file (make sure you save the file in UTF-8 without BOM)<br />
+Move and rename it as addon/locale/<YOUR_LANGUAGE_IDENTIFIER>/LC_MESSAGES/nvda.po<br />
+run <code>scons</code> to repackage  </p>
+<h2>Requests welcomed</h2>
+<p>i18n, optimizations, suggestions, bug reports, impressions, ETC  </p>
+<h2>changelog</h2>
+<p>1.03: Uses extensionPoints instead of terminate method for reverting user config.
+1.02: Minor code optimization. Added controlTypes.ROLE_DOCUMENT. Added license.<br />
+1.01: Added controlTypes.ROLE_RICHEDIT and controlTypes.ROLE_PASSWORDEDIT.  </p>
+</body>
+</html>
