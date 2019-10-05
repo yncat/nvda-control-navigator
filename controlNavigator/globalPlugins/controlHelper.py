@@ -3,14 +3,13 @@
 # Written by: Yukio Nozawa <personal@nyanchangames.com>
 # Released under GPL(See ../COPYING.txt for license)
 
+import api
 import config
 import globalPluginHandler
 import eventHandler
 from controlTypes import *
 import speech
 import tones
-import threading
-import time
 from globalCommands import commands
 from scriptHandler import executeScript
 
@@ -317,27 +316,15 @@ controlGuides[ROLE_INSERTED_CONTENT]=u""
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def __init__(self):
 		super(GlobalPlugin, self).__init__()
-		self.newevt=None
-		self.threadExit=False
-		self.thread=threading.Thread(target=self._thread)
-		self.thread.start()
 
-# Event listener
-	def event_gainFocus(self, obj, nextHandler):
-		self.newevt=obj.role
-		nextHandler()
-
-	def _thread(self):
-		while(True):
-			if self.threadExit: break
-			time.sleep(0.5)
-			if self.newevt: self.trigger()
+	def script_navigateControl(self, gesture):
+		self.trigger()
 
 	def trigger(self):
-		s=u"現在、%s上にいます。%s" % (controlNames[self.newevt], controlGuides[self.newevt])
+		role=api.getNavigatorObject().role
+		s=u"現在、%s上にいます。%s" % (controlNames[role], controlGuides[role])
 		speech.speakMessage(s)
-		self.newevt=None
 
-	def terminate(self):
-		self.threadExit=True
-		self.thread.join()
+	__gestures = {
+		"kb:f1": "navigateControl",
+	}
