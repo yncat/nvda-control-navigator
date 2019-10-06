@@ -3,7 +3,10 @@
 # Written by: Yukio Nozawa <personal@nyanchangames.com>
 # Released under GPL(See ../COPYING.txt for license)
 
+import itertools
+
 import api
+import browseMode
 import config
 import globalPluginHandler
 import eventHandler
@@ -12,6 +15,9 @@ import speech
 import tones
 from globalCommands import commands
 from scriptHandler import executeScript
+
+FOCUS_MODE=0
+BROWSE_MODE=1
 
 controlNames={}
 controlNames[ROLE_UNKNOWN]=u"サポートされていないコントロール"
@@ -172,7 +178,10 @@ controlGuides[ROLE_DIALOG]=u""
 controlGuides[ROLE_CHECKBOX]=u"チェックの状態を切り替えるには、スペースキーを押します。"
 controlGuides[ROLE_RADIOBUTTON]=u"上下矢印キーを押して、一つの項目を選択します。"
 controlGuides[ROLE_STATICTEXT]=u""
-controlGuides[ROLE_EDITABLETEXT]=u"テキストを編集するには、そのまま入力します。"
+controlGuides[ROLE_EDITABLETEXT]={
+	"focus": u"テキストを編集するには、そのまま入力します。前後のコントロールに移動するには、タブキー、または、シフト+タブキーを押します。この領域を抜けて、周りの文章を読むには、インサートキー+スペースキーを押してから、上下の矢印キーを押します。",
+	"browse": u"テキストを編集するには、スペースキーを押してから入力します。前後のコントロールに移動するには、タブキー、または、シフト+タブキーを押します。周りの文章を読むには、上下の矢印キーを押します。"
+}
 controlGuides[ROLE_BUTTON]=u"このボタンを押すには、スペースキーを押します。"
 controlGuides[ROLE_MENUBAR]=u""
 controlGuides[ROLE_MENUITEM]=u"上下左右の矢印キーで項目を選択します。決定するには、エンターキーを押します。なにも選択せずにメニューを閉じるには、エスケープキーを押します。"
@@ -320,9 +329,49 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_navigateControl(self, gesture):
 		self.trigger()
 
+	def checkNvdaMode(self):
+		focus = api.getFocusObject()
+		vbuf = focus.treeInterceptor
+		if not vbuf:
+			# #2023: Search the focus and its ancestors for an object for which browse mode is optional.
+			for obj in itertools.chain((api.getFocusObject(),), reversed(api.getFocusAncestors())):
+				if obj.shouldCreateTreeInterceptor:
+					continue
+				try:
+					obj.treeInterceptorClass
+				except:
+					continue
+				break
+			else:
+				return
+			# Force the tree interceptor to be created.
+			obj.shouldCreateTreeInterceptor = True
+			ti = treeInterceptorHandler.update(obj)
+			if not ti:
+				return
+			if focus in ti:
+				# Update the focus, as it will have cached that there is no tree interceptor.
+				focus.treeInterceptor = ti
+				# If we just happened to create a browse mode TreeInterceptor
+				# Then ensure that browse mode is reported here. From the users point of view, browse mode was turned on.
+				if isinstance(ti,browseMode.BrowseModeTreeInterceptor) and not ti.passThrough:
+					browseMode.reportPassThrough(ti,False)
+					braille.handler.handleGainFocus(ti)
+			return
+
+		if not isinstance(vbuf, browseMode.BrowseModeTreeInterceptor):
+			return
+		# Toggle browse mode pass-through.
+		return FOCUS_MODE if vbuf.passThrough else BROWSE_MODE
+
 	def trigger(self):
 		role=api.getNavigatorObject().role
-		s=u"現在、%s上にいます。%s" % (controlNames[role], controlGuides[role])
+		if isinstance(controlGuides[role],dict):
+			g=controlGuides[role]["browse"] if self.checkNvdaMode()==BROWSE_MODE else controlGuides[role]["focus"]
+		else:
+			g=controlGuides[role]
+		#end which guide messages? if any
+		s=u"現在、%s上にいます。%s" % (controlNames[role], g)
 		speech.speakMessage(s)
 
 	__gestures = {
