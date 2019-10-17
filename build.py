@@ -6,7 +6,7 @@ import os
 import sys
 import subprocess
 
-NVDA_ADDONS_PATH="C:\\Users\\nyanchan\\AppData\\Roaming\\nvda\\addons"
+NVDA_ADDONS_PATH="%s\\nvda\\addons" % os.path.expandvars("%appdata%")
 NVDA_EXECUTABLE_PATH="\"C:\\Program Files (x86)\\NVDA\\nvda_slave.exe\""
 
 if not os.path.isdir(NVDA_ADDONS_PATH):
